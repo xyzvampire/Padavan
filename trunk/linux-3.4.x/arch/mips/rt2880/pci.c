@@ -100,10 +100,15 @@ static int pcie_link_status = 0;
 //#define PCIE_PHY_SSC
 
 #define PCIE_SHARE_PIN_SW		10	// PERST_N GPIO Mode
-#if defined (GPIO_PERST)
-#define GPIO_PCIE_PORT0			19	// PERST_N
-#if defined (CONFIG_RALINK_I2S) || defined (CONFIG_RALINK_I2S_MODULE) || defined (CONFIG_PCIE_PERST_ONLY)
+#if defined(BOARD_ZTE_E8820S)
+/* E8820S: PCIE0=19, PCIE1=4 独立PERST */
+#define UARTL3_SHARE_PIN_SW		3
+#define GPIO_PCIE_PORT0			19
+#define GPIO_PCIE_PORT1			4
+#define GPIO_PCIE_PORT2			7
+#elif defined (CONFIG_RALINK_I2S) || defined (CONFIG_RALINK_I2S_MODULE) || defined (CONFIG_PCIE_PERST_ONLY)
 #define UARTL3_SHARE_PIN_SW		PCIE_SHARE_PIN_SW
+#define GPIO_PCIE_PORT0			19	// PERST_N
 #define GPIO_PCIE_PORT1			GPIO_PCIE_PORT0
 #define GPIO_PCIE_PORT2			GPIO_PCIE_PORT0
 #else
