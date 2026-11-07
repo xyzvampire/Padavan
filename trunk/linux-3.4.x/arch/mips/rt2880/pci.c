@@ -100,8 +100,26 @@ static int pcie_link_status = 0;
 //#define PCIE_PHY_SSC
 
 #define PCIE_SHARE_PIN_SW		10	// PERST_N GPIO Mode
-#if defined(BOARD_ZTE_E8820S)
-/* E8820S: PCIE0=19, PCIE1=4 独立PERST */
+#if defined(CONFIG_PCIE_PORT1_PERST_GPIO) && (CONFIG_PCIE_PORT1_PERST_GPIO > 0)
+/*
+ * Board has a dedicated PERST_N GPIO for PCIe Port1 besides Port0's GPIO19.
+ * ZTE E8820S is such a board: PCIE0 PERST = GPIO19, PCIE1 (MT7612E / 5G)
+ * PERST = GPIO4. Both must be driven, otherwise PCIe1 is never released from
+ * reset, MT7612E is not enumerated and the boot log shows
+ *	"PCIe1 no card, disable it (RST & CLK)"
+ * i.e. the 5G radio never starts.
+ *
+ * The GPIO numbers come from the kernel config on purpose: the board CFLAGS
+ * of configs/boards/<BOARD>/board.mk (e.g. -DBOARD_ZTE_E8820S) are only used
+ * by the user-space build and are never passed to the kernel build, so a
+ * "#if defined(BOARD_xxx)" here would silently compile out.
+ */
+#define UARTL3_SHARE_PIN_SW		3	// UARTF share pins -> GPIO mode
+#define GPIO_PCIE_PORT0			19
+#define GPIO_PCIE_PORT1			CONFIG_PCIE_PORT1_PERST_GPIO
+#define GPIO_PCIE_PORT2			7
+#elif defined(BOARD_ZTE_E8820S)
+/* E8820S: PCIE0=19, PCIE1=4 独立PERST (kept for reference, see note above) */
 #define UARTL3_SHARE_PIN_SW		3
 #define GPIO_PCIE_PORT0			19
 #define GPIO_PCIE_PORT1			4
@@ -641,6 +659,10 @@ int __init init_ralink_pci(void)
 #endif
 #if defined (CONFIG_PCIE_PORT2)
 	val |= (0x1<<GPIO_PCIE_PORT2);
+#endif
+#if defined(CONFIG_PCIE_PORT1_PERST_GPIO) && (CONFIG_PCIE_PORT1_PERST_GPIO > 0)
+	printk("PCIe PERST GPIO: port0=GPIO%d, port1=GPIO%d\n",
+		GPIO_PCIE_PORT0, GPIO_PCIE_PORT1);
 #endif
 	mdelay(50);
 	RALINK_GPIO_CTRL0 |= val;			// switch PERST_N pin to output mode
