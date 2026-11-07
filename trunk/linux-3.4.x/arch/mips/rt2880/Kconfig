@@ -113,6 +113,18 @@ config PCIE_PORT2
 config PCIE_PERST_ONLY
 	bool "Use single PERST_N pin (GPIO19) to reset PCIe peripherals"
 	default y
+
+config PCIE_PORT1_PERST_GPIO
+	int "PCIe Port1 PERST_N GPIO number (0 = shared with Port0)"
+	depends on PCIE_PORT1
+	default 0
+	range 0 95
+	help
+	  Some boards (e.g. ZTE E8820S) wire the PERST_N of PCIe Port1 to a
+	  dedicated GPIO, GPIO4, instead of sharing the Port0 PERST_N pin.
+	  A non-zero value here is driven together with Port0's PERST_N
+	  (GPIO19) so the device on Port1 (MT7612E / 5G) really leaves reset.
+	  Keep 0 for boards using the shared single PERST_N pin.
 endif
 
 #--------------------------
